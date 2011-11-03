@@ -117,7 +117,7 @@ The Future!
 			keyboard.signal('A', GP_input1.get_state('BTN3'))
 		else:
 			keyboard.signal('A', 0)
-
+	# need to trigger call back on all 3 dependent states!
 	mt.find('Sony*').on('EV_KEY': ['BTN1'], GP_function1)
 	mt.find('Sony*').on('EV_KEY': ['BTN2'], GP_function1)
-		
+	mt.find('Sony*').on('EV_KEY': ['BTN3'], GP_function1)		
