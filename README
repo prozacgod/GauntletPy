@@ -1,0 +1,54 @@
+Gauntletpy is input mapping program, the overarching goal of this project is to
+
+    "Interface with input devices and output events through output devices"
+
+Obvioulsy inspired by GlovePie! (props! great program) Gauntletpy is to be
+"GlovePie for Linux", more modular
+
+Input interfaces:
+	Supported:
+		Linux Event system (/dev/input/event*)
+
+	Working on it:
+		wiimote* (in progress)
+		ps3 (stalled, borrowed controller, someone want to buy me one?)
+		
+	Not gonna doit:
+		NONE - I will include or write code to support any device you have, as
+		long as I can test it or have a few trusted developers to test and verify
+		for me, priority to controllers I have "in hand" .. pun intended :P
+
+Output interfaces are
+	Supported:
+		Linux Event system (uinput)
+
+Currently
+	works to remap inputs from any linux event device to and emulated output device
+	examples:
+		joysticks to keyboards
+		joysticks to mice 
+		mice to keyboards (why not?)
+		power buttons to joysticks (meh?)
+		joysticks to absolute devices (like touch pads)
+		midi to keyboards
+		(etc, use your imagination)
+		
+
+Future plans
+	Socket (named, tcp, udp) based input and output
+	
+	Modularity - event watching could be a boot time daemon,
+		emitters would daemons watching named pipes running under another user.
+		this has security implications, like reading raw keyboard input - but if
+		understood, it might not be important (single user media player for instance)
+	
+	
+Issues:
+	64bit/32bit compatibility issues due to some kernel structs being different
+	I THINK i have them figured out, right now only one place has an issue - but
+	I don't actually have a 32bit system to test on, besides VirtualBox 
+	(and time has not permitted me to really test it)
+	
+	(yeah you read that right, it works fine on 64bit and maybe buggy on 32bit,
+	does that seem backward to you too?)
+

@@ -1,0 +1,123 @@
+Right now the project root is scaffolding, libraries and other useful bits to
+make the system work.
+
+I have experimental code in the 't' subdirectory that maps a joystick to the
+keyboard, which worked very nicely for my PS1 controller and Minecraft (the
+inspiration to make this, since Notch does not support controllers... :( )
+
+the modular structure I spoke of in the readme is currently a pipe dream, and I
+have not yet written all the "good bits" yet.
+
+The GOOD parts:
+
+/t/js_mouse_map.py
+	created this simple test program to map joystick input to the virtual mouse,
+	and played minecraft ... which pretty much killed any productivity on this
+	project
+
+devices.py
+	contains emulated keyboard and mouse, it uses a dynamic scheme that needs
+	a bit of tweaking from time to time, should be easy to understand, seems
+	to work well!
+		
+linux_input.py
+	implements EventDevice & Event classes which wrap the linux event system,
+	and decodes the data into python variables.
+	
+	test:
+	./linux_input.py /dev/input/event3  (pick an even device you have permission to open, like a joystick)
+	
+event_thread.py
+	implements MonitorThread (event monitoring system), allows watching for
+	higher level events, and subscribing multiple callbacks.
+
+	# create the monitor
+	mt = MonitorThread()
+	
+	# start the thread (thread exits when the main thread is dead)
+	mt.start()
+
+	eventInput = mt.monitorInput(EventDevice("/dev/input/event3"))
+	
+	mt.on({"EV_ABS": [None]}, ~callback~)
+	mt.on({"EV_KEY": [None]}, ~callback~)
+
+	while True:
+		sleep(.1);
+		
+The BAD Parts:
+
+	joy_mouse.py / gauntlet.py 
+	
+	was working on a module system, where multiple input processing modules
+	could work simultaneously, this is where I stalled - need some good ideas
+	on how to implement this
+	
+The Future!	
+*	would love to get some X window integration so scripts could detect the fore
+	window and ignore injection, unless it's going to the right place.
+
+*	Glovepie has a paradigm specific scripting language, and I almost want my
+	own scripting language in python but I'd rather use python inside of python
+
+	I'm thinking of using byteplay to munge compiled bytecode into something
+	different. I could have the power of python + the very useful paradigm
+	specific language features
+	
+	A user could write:
+		
+	KEY_S = Joystick['Sony*'].Button1
+	
+	which would compile just fine, and I would munge the byte code into
+
+	GP_input1 = mt.find('Sony*')
+	GP_input1.on('EV_KEY': ['BTN1'], lambda x: keyboard.signal('S', x.state))
+	
+	or similar, I'm not really sure of that syntax, but you get the idea.
+	
+	another example..
+		
+	if Joystick['Sony*'].Button1:
+		KEY_S = 1
+		KEY_A = 1
+	else:
+		KEY_S = 0
+		KEY_A = 0
+	
+	would get munged into....
+	
+	def GP_function1(event):
+		if GP_input1.get_state('BTN1'):
+			keyboard.signal('S', 1)
+			keyboard.signal('A', 1)
+		else:
+			keyboard.signal('S', 0)
+			keyboard.signal('A', 0)
+		
+	GP_input1 =	mt.find('Sony*')
+	GP_input1.on('EV_KEY': ['BTN1'], GP_function1)
+	
+	
+	the power of using the right mental idiom over pythonic programming syntax is 
+	obvious here.
+	
+	other fun language stuff 
+
+	if Joystick['Sony*'].Button1 + Joystick['Sony*'].Button2 == 2:
+		KEY_A = Joystick['Sony*'].Button3
+	else:
+		KEY_A = 0
+	
+	compiles to...
+
+	GP_input1 = mt.find('Sony*')
+		
+	def GP_function1():
+		if GP_input1.get_state('BTN1') + GP_input1.get_state('BTN2'):
+			keyboard.signal('A', GP_input1.get_state('BTN3'))
+		else:
+			keyboard.signal('A', 0)
+
+	mt.find('Sony*').on('EV_KEY': ['BTN1'], GP_function1)
+	mt.find('Sony*').on('EV_KEY': ['BTN2'], GP_function1)
+		
